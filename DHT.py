@@ -4,6 +4,7 @@ import socket
 from random import randint
 from hashlib import sha1 #进行hash加密
 from bencode import bencode, bdecode
+import traceback
 
 BOOTSTRAP_NODES = (
     ("67.215.246.10", 6881),
@@ -23,12 +24,14 @@ def random_id():
     return h.digest()
 
 if __name__ == "__main__":
-    client = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    client_udp = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     
-    server = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
+    server_udp = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
+#     server_udp.setblocking(False)
+    server_udp.settimeout(10)
     bind_ip='0.0.0.0'
     bind_port=6881
-    server.bind((bind_ip, bind_port))
+    server_udp.bind((bind_ip, bind_port))
     
     tid = entropy(2)
     nid = random_id()
@@ -48,11 +51,15 @@ if __name__ == "__main__":
     print sendmsg
     
     for address in BOOTSTRAP_NODES:
-        print address
-        server.sendto(sendmsg, address)
-        # 阻塞了, 估计是dht协议被公司内部禁止了
-        (response, server) = server.recvfrom(65536)
-
-        print response, server
-        
+        try:
+            print "------------------------"
+            print address
+            server_udp.sendto(sendmsg, address)
+            # 阻塞了, 估计是dht协议被公司内部禁止了
+            (response, server_addr) = server_udp.recvfrom(65536)
+    #         print response, server_addr
+            msg = bdecode(response)
+            print msg
+        except:
+            traceback.print_exc()
         
