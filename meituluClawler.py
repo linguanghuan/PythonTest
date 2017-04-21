@@ -62,19 +62,20 @@ def downloadImg(url):
             content = content  + "\n" + desc
         except:
             traceback.print_exc()
+            pass
         try:
             tags = soup.select("#fenxiang > div.fenxiang_l")[0].text
             tags = tags.replace("\n", ",")
             content = content  + "\n" + tags
         except:
             traceback.print_exc()
+            
         print content
         file = open(dirname +"/" + title + ".txt","w")
         file.write(content)
         file.close()
     except:
         traceback.print_exc()
-        return
     
     while True:
         try:
@@ -87,6 +88,10 @@ def downloadImg(url):
                 break
             else:
                 url = nextPageUrl
+                resp = requests.get(url,headers=headers)
+                # 
+                resp.encoding="utf-8"
+                soup = BeautifulSoup(resp.text, "lxml")
         except Exception:
             #这里没有用锁，好吧，也就这样了，应该不会出现什么问题吧，最多是不好看而已
             print("Connection Error, or BeautifulSoup going Wrong, forget it:",url)
@@ -94,8 +99,11 @@ def downloadImg(url):
              
     for link in linkPool:
         try:
+            print "download image:" + link
+            timestamp = link[-21:-4]
+            print "timestamp:" + timestamp
             content = requests.get(link,headers = headers)
-            title = str(ordinal) + ".jpg"
+            title = timestamp + ".jpg"
             #文件就保存在工作目录了
             file = open(dirname +"/" + title,"wb")
             file.write(content._content)
@@ -103,6 +111,7 @@ def downloadImg(url):
             ordinal += 1
         except Exception :
             print("Couldn't Parse!",link)
+            traceback.print_exc()
             break
  
  
