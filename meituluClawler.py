@@ -13,30 +13,32 @@ import threading
 import os
 import traceback
 import chardet
-
+import random
+import time
 # http://wangye.org/blog/archives/629/
 import sys
 reload(sys)
 sys.setdefaultencoding('utf-8')
 
-basePath = "F:/meitulu/"
+basePath = "C:/Users/test/Desktop/meitulu/"
 threadLimit = 30
  
 os.chdir(basePath)
  
-urlPool = ["http://www.meitulu.com/item/{}.html".format(str(i))for i in range(5000,6000)]
+urlPool = ["http://www.meitulu.com/item/{}.html".format(str(i))for i in range(7000,7500)]
 numMutex = threading.Lock()
 #以g开头，意味着这是一个全局变量
 g_threadNum = 0
  
 def downloadImg(url):
     dirname = url.split("/")[-1].split(".")[0]
+    bakDir = dirname
     if os.path.exists(dirname):
         print("dir already exist: " + dirname)
         return
     print "deal: " + dirname
     ordinal = 1
-    headers = {"User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/48.0.2564.116 Safari/537.36"}
+    headers = {"User-Agent":"Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36"}
     linkPool = []
     try:
         resp = requests.get(url,headers=headers)
@@ -48,7 +50,13 @@ def downloadImg(url):
 #         print "title: " + title + " " + title2
         dirname = dirname + "_" + title
         if not os.path.isdir(dirname):
-            os.mkdir(dirname)
+            try:
+                os.mkdir(dirname)
+            except:
+                traceback.print_exc();
+                dirname = bakDir
+                os.mkdir(dirname)
+                
         content = title
         try:
             info = soup.select("body > div.width > div.c_l")[0].text
@@ -71,7 +79,11 @@ def downloadImg(url):
             traceback.print_exc()
             
         print content
-        file = open(dirname +"/" + title + ".txt","w")
+        try:
+            file = open(dirname +"/" + title + ".txt","w")
+        except:
+            traceback.print_exc()
+            file = open(dirname +"/" + dirname + ".txt","w")
         file.write(content)
         file.close()
     except:
@@ -99,6 +111,7 @@ def downloadImg(url):
              
     for link in linkPool:
         try:
+            
             print "download image:" + link
             timestamp = link[-21:-4]
             print "timestamp:" + timestamp
@@ -111,9 +124,9 @@ def downloadImg(url):
             ordinal += 1
         except Exception :
             print("Couldn't Parse!",link)
+            sleepTime = random.randint(1,3)
+            time.sleep(sleepTime)
             traceback.print_exc()
-            break
- 
  
 class MyThread(threading.Thread):
     def __init__(self,url):
