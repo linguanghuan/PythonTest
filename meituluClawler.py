@@ -21,11 +21,11 @@ reload(sys)
 sys.setdefaultencoding('utf-8')
 
 basePath = "C:/Users/test/Desktop/meitulu/"
-threadLimit = 30
+threadLimit = 20
  
 os.chdir(basePath)
  
-urlPool = ["http://www.meitulu.com/item/{}.html".format(str(i))for i in range(7000,7500)]
+urlPool = ["http://www.meitulu.com/item/{}.html".format(str(i))for i in range(9500,10001)]
 numMutex = threading.Lock()
 #以g开头，意味着这是一个全局变量
 g_threadNum = 0
