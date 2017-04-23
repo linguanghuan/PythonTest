@@ -6,13 +6,14 @@ Created on Sat Aug 27 21:18:12 2016
  
 @author: 独处
 """
- 
+
+#pip install requests 
 import requests
+#pip install bs4
 from bs4 import BeautifulSoup
 import threading
 import os
 import traceback
-import chardet
 import random
 import time
 # http://wangye.org/blog/archives/629/
@@ -20,10 +21,17 @@ import sys
 reload(sys)
 sys.setdefaultencoding('utf-8')
 
-basePath = "C:/Users/test/Desktop/meitulu/"
 threadLimit = 20
- 
+
+homePath = os.path.expanduser('~')
+print homePath
+basePath = homePath + "\Desktop\meitulu"
+
+if os.path.exists(basePath)==False:
+    os.mkdir(basePath)
 os.chdir(basePath)
+
+sys.exit()
  
 urlPool = ["http://www.meitulu.com/item/{}.html".format(str(i))for i in range(9500,10001)]
 numMutex = threading.Lock()
