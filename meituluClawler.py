@@ -21,19 +21,23 @@ import sys
 reload(sys)
 sys.setdefaultencoding('utf-8')
 
-threadLimit = 20
+threadLimit = 50
 
 homePath = os.path.expanduser('~')
 print homePath
-basePath = homePath + "\Desktop\meitulu"
+# basePath = homePath + "\Desktop\meitulu"
+basePath = "D:\meitulu"
 
 if os.path.exists(basePath)==False:
     os.mkdir(basePath)
 os.chdir(basePath)
 
-sys.exit()
- 
-urlPool = ["http://www.meitulu.com/item/{}.html".format(str(i))for i in range(9500,10001)]
+# urlPool1 = ["http://www.meitulu.com/item/{}.html".format(str(i))for i in range(6500,7000)]
+# urlPool2 = ["http://www.meitulu.com/item/{}.html".format(str(i))for i in range(7000,9000)]
+urlPool1 = ["http://www.meitulu.com/item/{}.html".format(str(i))for i in range(3000,4000)]
+urlPool2 = ["http://www.meitulu.com/item/{}.html".format(str(i))for i in range(4000,5000)]
+urlPool = urlPool1 + urlPool2;
+
 numMutex = threading.Lock()
 #以g开头，意味着这是一个全局变量
 g_threadNum = 0
@@ -57,6 +61,10 @@ def downloadImg(url):
 #         title2 = title.decode("gbk").encode("utf-8");
 #         print "title: " + title + " " + title2
         dirname = dirname + "_" + title
+        if os.path.exists(dirname):
+            print("dir already exist: " + dirname)
+            return
+        
         if not os.path.isdir(dirname):
             try:
                 os.mkdir(dirname)
@@ -105,28 +113,37 @@ def downloadImg(url):
                 linkPool.append(link)
             nextPageUrl = soup.findAll("a",{"class":"a1"})[1].get("href")
             if nextPageUrl == url :
+                print "=======================found end"
                 break
             else:
-                url = nextPageUrl
-                resp = requests.get(url,headers=headers)
+                print "found next page:" + nextPageUrl
+                url = nextPageUrl;
+                fullUrl = nextPageUrl;
+                if nextPageUrl.find("meitulu")==-1:
+                    fullUrl = "http://www.meitulu.com" + nextPageUrl
+                resp = requests.get(fullUrl,headers=headers)
                 # 
                 resp.encoding="utf-8"
                 soup = BeautifulSoup(resp.text, "lxml")
         except Exception:
             #这里没有用锁，好吧，也就这样了，应该不会出现什么问题吧，最多是不好看而已
             print("Connection Error, or BeautifulSoup going Wrong, forget it:",url)
+            traceback.print_exc()
             break
              
     for link in linkPool:
         try:
-            
             print "download image:" + link
             timestamp = link[-21:-4]
             print "timestamp:" + timestamp
             content = requests.get(link,headers = headers)
             title = timestamp + ".jpg"
             #文件就保存在工作目录了
-            file = open(dirname +"/" + title,"wb")
+            fileName = dirname +"/" + title
+            if os.path.exists(fileName):
+                print "file already exist", fileName
+                continue
+            file = open(fileName,"wb")
             file.write(content._content)
             file.close()
             ordinal += 1
