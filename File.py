@@ -1,6 +1,7 @@
-#coding: utf-8
+# coding: utf-8
 import hashlib
 from bencode import bencode, bdecode
+# pip install demjson
 import demjson
 
 def write():

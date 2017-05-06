@@ -2,6 +2,7 @@
 #coding=utf-8
 
 import requests
+# pip install lxml
 from lxml import html
 import os
 import traceback

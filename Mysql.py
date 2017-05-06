@@ -2,6 +2,7 @@
 # encoding: utf-8
 
 # conda install MySQL-python
+# pip install MySQL-python
 import MySQLdb as mdb  #数据库连接器
 
 class MysqlTester():
