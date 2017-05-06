@@ -93,40 +93,43 @@ if __name__ == "__main__":
     today = now.strftime('%Y-%m-%d')
     recordFile = "all_files_"+today+".txt" 
     if os.path.exists(recordFile):
-        file = open(recordFile, "r")
-        for line in file:
-            linkPool.append(line)
+        try:
+            file = open(recordFile, "r")
+            for line in file:
+                linkPool.append(line)
+        except:
+            traceback.print_exc()
+            sys.exit()
     else:
         pageUrls = ["http://www.allitebooks.com/page/{}/".format(str(i+1))for i in range(708, -1, -1)]
     #     pageUrls = ["http://www.allitebooks.com/page/{}/".format(str(i))for i in range(1,2)]
+
         try:
-            while len(pageUrls) > 0:
-                pageUrl = pageUrls.pop()
-                print "deal", pageUrl
-                resp = requests.get(pageUrl, headers=headers)
-                resp.encoding="utf-8"
-                soup = BeautifulSoup(resp.text, "lxml")
-                entry_titles = soup.findAll("h2",{"class":"entry-title"})
-                for entry_title in entry_titles:
-        #             print entry_title
-                    link = entry_title.a.get('href')
-                    title = entry_title.a.string
-                    print "get", link
-        #             print title
-                    linkPool.append(link)
             file = open(recordFile, "w")
-            try:                
-                for link in linkPool:
-                    file.write(link + '\n')
-            except:
-                traceback.print_exc()
-            finally:
-                file.close()
+            while len(pageUrls) > 0:
+                try:
+                    pageUrl = pageUrls.pop()
+                    print "deal", pageUrl
+                    resp = requests.get(pageUrl, headers=headers)
+                    resp.encoding="utf-8"
+                    soup = BeautifulSoup(resp.text, "lxml")
+                    entry_titles = soup.findAll("h2",{"class":"entry-title"})
+                    for entry_title in entry_titles:
+            #             print entry_title
+                        link = entry_title.a.get('href')
+                        title = entry_title.a.string
+                        print "get", link
+            #             print title
+                        linkPool.append(link)
+                        file.write(link + '\n')
+                    file.flush()
+                except:
+                    traceback.print_exc()
         except:
             traceback.print_exc()
         finally:
-            pass
-    
+            file.close()
+                
     pool = threadpool.ThreadPool(40)
     threadRequests = threadpool.makeRequests(get_a_book, linkPool)
     [pool.putRequest(req) for req in threadRequests]
