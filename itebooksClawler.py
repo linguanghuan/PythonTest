@@ -32,6 +32,10 @@ def get_a_book(link):
                 traceback.print_exc()
                 return
             
+        if os.path.exists(os.path.join(dirname, "success_mark.txt")):
+            print "skip success job:", dirname
+            return
+          
         resp = requests.get(link, headers=headers)
         soup = BeautifulSoup(resp.text, "lxml")
         try:

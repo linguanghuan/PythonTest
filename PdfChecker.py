@@ -16,6 +16,7 @@ import sys
 all_pdf_files = []
 failed_files = Queue()
 succed_files = Queue()
+skip_path = Queue()
 
 fail_dir ="F:\\failedbooks\\"
 if os.path.exists(fail_dir)==False:
@@ -38,25 +39,31 @@ def succ_test():
         fp = open('Making Games.pdf', 'rb')
         parser = PDFParser(fp)
         document = PDFDocument(parser)
-        print document.is_extractable
+        print "extractable:",document.is_extractable, ",modifiable:",document.is_modifiable,", printable:", document.is_printable
         outlines = document.get_outlines()
         print outlines
     except:
         traceback.print_exc()
     finally:
+        parser.close()
         fp.close()
 
 def get_all_files(dir):
     try:
         g = os.walk(dir)
-        for path, subdir,filelist in g:
+        for path, subdir, filelist in g:
 #             print '----------------------------'
 #             print "path:", path, "subdir:", subdir
+            if "success_mark.txt" in filelist:
+                print "skip success dir:", path
+                skip_path.put(path)
+                continue
             for filename in filelist:
                 file = os.path.join(path, filename)
                 if file.endswith("pdf"):
                     print "found pdf", file
                     all_pdf_files.append(file)
+        print "**********************skiped path count", skip_path.qsize()
     except:
         traceback.print_exc()
 
@@ -67,8 +74,13 @@ def check_pdf(file):
         fp = open(file, 'rb')
         parser = PDFParser(fp)
         document = PDFDocument(parser)
-        print "is_extractable:" , document.is_extractable
+        print "extractable:",document.is_extractable, ",modifiable:",document.is_modifiable,", printable:", document.is_printable
         succed_files.put(file)
+        succed_path = os.path.split(file)[0]
+        succed_mark_file = os.path.join(succed_path, "success_mark.txt")
+        f = open(succed_mark_file, "w")
+        f.close()
+        print "succed mark file generated:", succed_mark_file
     except:
         traceback.print_exc()
         failed_files.put(file)
@@ -100,7 +112,7 @@ if __name__ == "__main__":
     get_all_files('F:\\allitebooks')
 
     print "get pdf file count:", len(all_pdf_files)
-    pool = threadpool.ThreadPool(5)
+    pool = threadpool.ThreadPool(50)
     threadRequests = threadpool.makeRequests(check_pdf, all_pdf_files)
     [pool.putRequest(req) for req in threadRequests]
     pool.wait()    
