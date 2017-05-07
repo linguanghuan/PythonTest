@@ -11,6 +11,7 @@ from Queue import Queue
 from Queue import Empty
 import threadpool
 import shutil
+import sys
 
 all_pdf_files = []
 failed_files = Queue()
@@ -60,6 +61,7 @@ def get_all_files(dir):
         traceback.print_exc()
 
 def check_pdf(file):
+    failed = False
     print "check_pdf:", file
     try:
         fp = open(file, 'rb')
@@ -70,16 +72,31 @@ def check_pdf(file):
     except:
         traceback.print_exc()
         failed_files.put(file)
-        shutil.move(file, fail_dir)
-#         os.remove(file)
+        failed = True
+#         print "move fail file to dir", fail_dir, ",", file
+#         shutil.move(file, fail_dir)  # 必须先关闭文件才能移动，不然报错  os.unlink(src) WindowsError: [Error 32]  http://jining2593.blog.163.com/blog/static/2770148420101024114428257/
     finally:
         parser.close()
         fp.close()
+        if failed == True:
+            print "move fail file to dir", fail_dir, ",", file
+            shutil.move(file, fail_dir)
         print "all:", len(all_pdf_files), ",succed:", succed_files.qsize(), ",failed:", failed_files.qsize()
+
+def remove_test(file):
+#     F:\\failedbooks\\Mastering FreeSWITCH.pdf  必须2个斜杠，不然会被当成转义子字符
+    os.remove(file)
+
+def unlink_test(file):
+    os.unlink(file)
                
 if __name__ == "__main__":
 #     fail_test()
 #     succ_test()
+#     remove_test("F:\\failedbooks\\Mastering FreeSWITCH.pdf")
+#     unlink_test("F:\\failedbooks\\3D Game Environments.pdf")
+#     sys.exit()
+
     get_all_files('F:\\allitebooks')
 
     print "get pdf file count:", len(all_pdf_files)
