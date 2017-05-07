@@ -101,7 +101,7 @@ if __name__ == "__main__":
             traceback.print_exc()
             sys.exit()
     else:
-        pageUrls = ["http://www.allitebooks.com/page/{}/".format(str(i+1))for i in range(708, -1, -1)]
+        pageUrls = ["http://www.allitebooks.com/page/{}/".format(str(i+1))for i in range(299, -1, -1)]
     #     pageUrls = ["http://www.allitebooks.com/page/{}/".format(str(i))for i in range(1,2)]
 
         try:
