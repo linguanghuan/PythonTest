@@ -66,5 +66,49 @@ def sizecheck(dir):
     except:
         traceback.print_exc()
 
+def checkPdfExist(dir):
+    os.chdir(dir);
+    subdirs = os.listdir(os.getcwd())
+    for subdir in subdirs:
+        deleteFlag = True
+        print "============",subdir,"============"
+        files = os.listdir(subdir)
+        for file in files:
+            if file.endswith("pdf"):
+                deleteFlag = False
+                break
+        if deleteFlag == True:
+            print "delete ", subdir
+            shutil.rmtree(subdir)
+            
+def getPermFail(dir, out):
+    os.chdir(dir);
+    fp = open(out, 'w')
+    subdirs = os.listdir(os.getcwd())
+    for subdir in subdirs:
+        errorFlag = False
+        print "============",subdir,"============"
+        try:
+            files = os.listdir(subdir)
+            for file in files:
+                if file.endswith("pdf"):
+                    path = os.path.join(subdir, file)
+                    size = os.path.getsize(path)
+                    print "======size:", size
+                    if size==564:
+                        errorFlag = True
+                        fp.write(subdir)
+                        fp.write('\n')
+                        fp.flush()
+                        break
+            if errorFlag == True:
+                print "perm error ", subdir
+        except:
+            traceback.print_exc()
+    fp.flush()
+    fp.close()
+                             
 if __name__=="__main__":
-    sizecheck('E:\\allitebooks')
+#     sizecheck('E:\\book2')
+#     checkPdfExist('E:\\part\\fail')
+    getPermFail('E:\\book2', "perm_error.txt")
