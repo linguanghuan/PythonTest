@@ -18,6 +18,7 @@ import os
 import datetime
 import threading
 import shutil
+from time import sleep
 
 reload(sys)
 sys.setdefaultencoding('utf-8')
@@ -31,6 +32,7 @@ today = now.strftime('%Y-%m-%d')
 recordFile = "all_files_"+today+".txt"
 newPath = "E:/book2/"
 oldPath = "E:/allitebooks"
+failedFile = "E:\\book2\\perm_error.txt"
 manualPath = "E:/allitebooks_manual"
 os.chdir(newPath)
 recordfd = open(recordFile, "a") 
@@ -44,7 +46,19 @@ def loadExists():
     subdirs = os.listdir(os.getcwd());
     for subdir in subdirs:
         exist[subdir] = "1"
-
+    print "exist len:", len(exist)
+    sleep(3)    
+    try:
+        filefd = open(failedFile, "r")
+        for line in filefd:
+            exist[line.strip()] = "1" # 需要trim掉回车
+        filefd.close()    
+    except:
+        traceback.print_exc()
+        sys.exit()
+    print "exist len:", len(exist)
+    sleep(3)
+        
 def checkExist(key):
     try:
         if exist[key]=="1":
@@ -75,7 +89,7 @@ def getPdfBook(link):
         if os.path.exists(success_mark):
             print "skip success job:", dirname
             return
-
+        
         resp = requests.get(link, headers=headers)
         soup = BeautifulSoup(resp.text, "lxml")
         try:
@@ -105,31 +119,31 @@ def getPdfBook(link):
             return
         try:
             descFile = dirname + "/" + dirname + ".txt"
-            file = open(descFile,"w")
-            file.write(detail)
-            file.write(desc)
+            filefd = open(descFile,"w")
+            filefd.write(detail)
+            filefd.write(desc)
         except:
             traceback.print_exc()
         finally:
-            file.close()
+            filefd.close()
             
         content = requests.get(downloadLink, headers = headers)
         try:
-            file = open(fullFileName,"wb")
-            file.write(content._content)
-            file.close()
+            filefd = open(fullFileName,"wb")
+            filefd.write(content._content)
+            filefd.close()
         except:
             traceback.print_exc()
         finally:
-            file.close()
+            filefd.close()
     except:
         traceback.print_exc()
 
 def test():
     print range(708, -1, -1)
     return
-    str = "http://www.allitebooks.com/build-mobile-apps-with-ionic-2-and-firebase/"
-    print str.split("/")[3]
+    teststr = "http://www.allitebooks.com/build-mobile-apps-with-ionic-2-and-firebase/"
+    print teststr.split("/")[3]
     str2 = "http://file.allitebooks.com/20170505/Build Mobile Apps with Ionic 2 and Firebase.pdf"
     print str2.split("/")[-1]
 
@@ -144,7 +158,7 @@ def getBooks(pageUrl):
         for entry_title in entry_titles:
 #             print entry_title
             link = entry_title.a.get('href')
-            title = entry_title.a.string
+#             title = entry_title.a.string
             print "get", link
 #             print title
             linkPool.append(link)
@@ -161,7 +175,7 @@ def getBooks(pageUrl):
 if __name__ == "__main__":
 #     test()
     loadExists()
-    if checkExist("adding-ajax")==True:
+    if checkExist("a-tour-of-c")==True:
         print "111111111"
 #     sys.exit()
     print "allitebooks clawler"
@@ -169,15 +183,15 @@ if __name__ == "__main__":
     os.chdir("E:/book2/")
     if os.path.exists(recordFile) and os.path.getsize(recordFile) > 10:
         try:
-            file = open(recordFile, "r")
-            for line in file:
+            filefd = open(recordFile, "r")
+            for line in filefd:
                 linkPool.append(line)
         except:
             traceback.print_exc()
             sys.exit()
     else:
         try:
-            file = open(recordFile, "w")
+            filefd = open(recordFile, "w")
             pool = threadpool.ThreadPool(40)
             threadRequests = threadpool.makeRequests(getBooks, pageUrls)
             [pool.putRequest(req) for req in threadRequests]
@@ -186,6 +200,9 @@ if __name__ == "__main__":
             traceback.print_exc()
         finally:
             file.close()
+            
+    print "link pool size:", len(linkPool)
+    sleep(3)
 #     sys.exit()
 
     os.chdir(newPath)            

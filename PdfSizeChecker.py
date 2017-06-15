@@ -72,14 +72,18 @@ def checkPdfExist(dir):
     for subdir in subdirs:
         deleteFlag = True
         print "============",subdir,"============"
-        files = os.listdir(subdir)
-        for file in files:
-            if file.endswith("pdf"):
-                deleteFlag = False
-                break
-        if deleteFlag == True:
-            print "delete ", subdir
-            shutil.rmtree(subdir)
+        try:
+            files = os.listdir(subdir)
+            for file in files:
+                if file.endswith("pdf"):
+                    deleteFlag = False
+                    break
+            if deleteFlag == True:
+                print "delete ", subdir
+                shutil.rmtree(subdir)
+        except:
+            traceback.print_exc()
+        
             
 def getPermFail(dir, out):
     os.chdir(dir);
@@ -110,5 +114,5 @@ def getPermFail(dir, out):
                              
 if __name__=="__main__":
 #     sizecheck('E:\\book2')
-#     checkPdfExist('E:\\part\\fail')
-    getPermFail('E:\\book2', "perm_error.txt")
+    checkPdfExist('E:\\book2')
+#     getPermFail('E:\\book2', "perm_error.txt")
